@@ -1,41 +1,42 @@
 // =========================================================
-// Point d'entree de l'appli.
-// Pour l'instant : un ecran d'accueil + un test de connexion Supabase.
-// Les prochaines etapes (connexion, foyer, entrees...) s'ajouteront ici.
+// Point d'entree de l'appli : decide quel ecran afficher.
+//   pas connecte        -> ecran de connexion
+//   connecte sans foyer -> creer / rejoindre un foyer
+//   connecte avec foyer -> accueil du foyer
+// Chaque ecran rappelle "demarrer" quand il a fini son travail.
 // =========================================================
 import { supabase } from "./supabase.js";
+import { ecranConnexion } from "./auth.js";
+import { ecranFoyerChoix, ecranAccueilFoyer } from "./foyer.js";
 
 const app = document.getElementById("app");
 
-// Ecran d'accueil provisoire
-function afficherAccueil() {
-  app.innerHTML = `
-    <header class="apparition">
-      <h1>Chez Nous <span class="coeur">♡</span></h1>
-      <p class="sous-titre">Notre petit coin à deux</p>
-    </header>
+async function demarrer() {
+  const { data: { session } } = await supabase.auth.getSession();
 
-    <section class="carte apparition d2">
-      <h2>Bienvenue à la maison</h2>
-      <p>Ici, on garde nos plus beaux moments, nos fous rires et nos petites victoires.</p>
-      <span id="etat" class="etat">Je vérifie la connexion…</span>
-    </section>
-  `;
-}
+  if (!session) return ecranConnexion(app, demarrer);
 
-// Petit test : l'appli arrive-t-elle a joindre Supabase ?
-async function testerConnexion() {
-  const etat = document.getElementById("etat");
-  try {
-    const { error } = await supabase.auth.getSession();
-    if (error) throw error;
-    etat.textContent = "Tout est branché ✓";
-  } catch (e) {
-    console.error(e);
-    etat.textContent = "Connexion impossible pour l'instant";
-    etat.classList.add("erreur");
+  // A-t-on deja un foyer ? (la requete inclut les infos du foyer)
+  const { data, error } = await supabase
+    .from("members")
+    .select("display_name, role, households(id, name, invite_code)")
+    .eq("user_id", session.user.id)
+    .limit(1);
+
+  if (error) {
+    console.error(error);
+    app.innerHTML = `
+      <header><h1>Oups</h1></header>
+      <section class="carte">
+        <p>Je n'arrive pas à joindre la maison pour l'instant. Vérifie ta connexion puis réessaie.</p>
+        <button class="bouton plein" id="reessayer" type="button">Réessayer</button>
+      </section>`;
+    document.getElementById("reessayer").addEventListener("click", demarrer);
+    return;
   }
+
+  if (!data || data.length === 0) return ecranFoyerChoix(app, demarrer);
+  return ecranAccueilFoyer(app, data[0], demarrer);
 }
 
-afficherAccueil();
-testerConnexion();
+demarrer();
