@@ -5,6 +5,7 @@
 // =========================================================
 import { supabase } from "./supabase.js";
 import { echapper, afficherMessage, messageErreur } from "./outils.js";
+import { afficherJournal, arreterJournal } from "./journal.js";
 
 // ---------- Choisir : creer ou rejoindre ----------
 export function ecranFoyerChoix(racine, apres) {
@@ -69,6 +70,7 @@ export function ecranFoyerChoix(racine, apres) {
   });
 
   racine.querySelector("#deconnexion").addEventListener("click", async () => {
+    arreterJournal();
     await supabase.auth.signOut();
     apres();
   });
@@ -79,10 +81,11 @@ export function ecranFoyerChoix(racine, apres) {
 export async function ecranAccueilFoyer(racine, membre, apres) {
   const foyer = membre.households;
 
-  // Liste des membres du foyer (RLS : on ne voit que ceux de son propre foyer)
+  // Membres du foyer (RLS : on ne voit que ceux de son propre foyer).
+  // On garde user_id : le journal s'en sert pour afficher le prenom de l'auteur.
   const { data: membres } = await supabase
     .from("members")
-    .select("display_name, role")
+    .select("user_id, display_name, role")
     .eq("household_id", foyer.id)
     .order("joined_at");
 
@@ -98,19 +101,19 @@ export async function ecranAccueilFoyer(racine, membre, apres) {
       <p class="sous-titre">Bonjour ${echapper(membre.display_name)} !</p>
     </header>
 
-    <section class="carte apparition d2">
-      <h2>Qui vit ici</h2>
-      <ul class="membres">${liste}</ul>
-      ${attendEncore ? `
-        <p class="petit">Il manque encore quelqu'un. Donne-lui ce code :</p>
-        <div class="code-invitation" id="code-invitation">${echapper(foyer.invite_code)}</div>
+    ${attendEncore ? `
+      <section class="carte apparition d2">
+        <h2>Il manque encore quelqu'un</h2>
+        <p class="petit">Donne-lui ce code pour qu'il ou elle rejoigne le foyer :</p>
+        <div class="code-invitation">${echapper(foyer.invite_code)}</div>
         <button class="bouton plein sauge" id="copier" type="button">Copier le code</button>
-      ` : `<p class="petit">Le foyer est au complet. 🏡</p>`}
-    </section>
+      </section>` : ""}
+
+    <div id="journal"></div>
 
     <section class="carte apparition d3">
-      <h2>Notre journal</h2>
-      <p>Bientôt, c'est ici que vous écrirez vos plus beaux moments.</p>
+      <h2>Qui vit ici</h2>
+      <ul class="membres">${liste}</ul>
     </section>
 
     <button class="lien" id="deconnexion" type="button">Se déconnecter</button>
@@ -129,7 +132,11 @@ export async function ecranAccueilFoyer(racine, membre, apres) {
   }
 
   racine.querySelector("#deconnexion").addEventListener("click", async () => {
+    arreterJournal();
     await supabase.auth.signOut();
     apres();
   });
+
+  // On branche le journal dans sa boite
+  afficherJournal(racine.querySelector("#journal"), foyer, membres || []);
 }

@@ -235,3 +235,104 @@ input::placeholder { color: #B9A793; font-weight: 400; }
   color: var(--terracotta-fonce);
   user-select: all;
 }
+
+/* =========================================================
+   Journal : formulaire d'ecriture + cartes-souvenirs
+   ========================================================= */
+
+textarea {
+  width: 100%;
+  font: 600 1rem/1.5 var(--police-texte);
+  color: var(--brun);
+  background: var(--creme);
+  border: 2px solid var(--beige);
+  border-radius: 16px;
+  padding: 13px 16px;
+  outline: none;
+  resize: vertical;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+textarea:focus { border-color: var(--sauge); box-shadow: 0 0 0 4px var(--sauge-clair); }
+textarea::placeholder { color: #B9A793; font-weight: 400; }
+
+input[type="date"] {
+  width: 100%;
+  -webkit-appearance: none; appearance: none;
+  font: 600 1rem var(--police-texte);
+  color: var(--brun);
+  background: var(--creme);
+  border: 2px solid var(--beige);
+  border-radius: 16px;
+  padding: 13px 16px;
+  min-height: 50px;
+  outline: none;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.chip {
+  appearance: none;
+  border: 2px solid var(--beige);
+  background: var(--creme);
+  color: var(--brun-doux);
+  font: 700 .9rem var(--police-texte);
+  padding: 8px 14px;
+  min-height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip:active { background: var(--sauge-clair); border-color: var(--sauge); }
+
+#fil { margin-top: 8px; }
+.centre { text-align: center; }
+.carte.vide { text-align: center; }
+
+/* Une page de carnet / carte-souvenir */
+.souvenir {
+  position: relative;
+  background: var(--creme-clair);
+  border: 1px solid var(--beige);
+  border-left: 6px solid var(--terracotta);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: 18px 18px 14px 18px;
+  margin-top: 18px;
+  animation: apparition .5s ease both;
+}
+.souvenir.autre { border-left-color: var(--sauge); }
+
+.souvenir-date {
+  font-family: var(--police-titre);
+  font-size: 1.55rem;
+  line-height: 1.1;
+  color: var(--terracotta-fonce);
+  text-transform: capitalize;
+}
+.souvenir.autre .souvenir-date { color: #6F845C; }
+
+.souvenir-texte { margin: 10px 0 14px; word-break: break-word; }
+
+.souvenir-pied {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  font-size: .9rem; color: var(--brun-doux);
+}
+.pastille.petite { width: 26px; height: 26px; font-size: 1.05rem; }
+.souvenir.autre .pastille { background: var(--sauge); color: #34402B; }
+.auteur { font-weight: 700; }
+
+.tag {
+  background: var(--sauge-clair);
+  color: #55684A;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .82rem;
+}
+
+.supprimer {
+  margin-left: auto;
+  appearance: none; border: 0; background: none;
+  color: var(--brun-doux);
+  font: 600 .85rem var(--police-texte);
+  text-decoration: underline; text-underline-offset: 3px;
+  padding: 10px 4px; cursor: pointer;
+}
