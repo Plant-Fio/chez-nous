@@ -398,3 +398,34 @@ input[type="date"] {
 }
 .visionneuse img { max-width: 100%; max-height: 82%; border-radius: 14px; }
 .visionneuse .fermer { margin-top: 14px; color: var(--beige); font-size: .9rem; }
+
+/* =========================================================
+   Recherche et filtres
+   ========================================================= */
+
+.marge-haut { margin-top: 14px; }
+
+input[type="search"] {
+  width: 100%;
+  -webkit-appearance: none; appearance: none;
+  font: 600 1rem var(--police-texte);
+  color: var(--brun);
+  background: var(--creme);
+  border: 2px solid var(--beige);
+  border-radius: 16px;
+  padding: 13px 16px;
+  min-height: 50px;
+  outline: none;
+}
+input[type="search"]:focus { border-color: var(--sauge); box-shadow: 0 0 0 4px var(--sauge-clair); }
+input[type="search"]::placeholder { color: #B9A793; font-weight: 400; }
+
+/* Etiquette choisie (formulaire et filtres) */
+.chip.actif {
+  background: var(--sauge-clair);
+  border-color: var(--sauge);
+  color: #4A5C3F;
+}
+
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.deux-colonnes .petit { display: block; margin-bottom: 4px; }

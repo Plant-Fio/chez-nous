@@ -65,6 +65,9 @@ export async function afficherJournal(zone, foyer, membres) {
 
   let photos = [];              // photos choisies pour la page en cours : { blob, apercu }
   let photosParPage = {};       // pour la suppression : id de page -> [chemins]
+  let entrees = [];             // toutes les pages chargees (avant filtre)
+  let lienPhoto = () => undefined; // donne le lien temporaire d'une photo
+  const filtre = { texte: "", tag: "", du: "", au: "" }; // la recherche en cours
 
   zone.innerHTML = `
     <button class="bouton plein apparition d2" id="ouvrir" type="button">Écrire une page ✍️</button>
@@ -94,6 +97,25 @@ export async function afficherJournal(zone, foyer, membres) {
       <button class="bouton plein" id="enregistrer" type="submit">Garder ce souvenir</button>
       <button class="lien" type="button" id="annuler">Annuler</button>
     </form>
+
+    <button class="bouton secondaire marge-haut" id="bascule-recherche" type="button">Rechercher dans le journal 🔍</button>
+
+    <section class="carte" id="filtres" hidden>
+      <label for="f-texte">Un mot ou un prénom</label>
+      <input id="f-texte" type="search" autocomplete="off" placeholder="plage, anniversaire, Léa…" />
+
+      <label>Une étiquette</label>
+      <div class="chips" id="f-tags"></div>
+
+      <label>Une période</label>
+      <div class="deux-colonnes">
+        <div><span class="petit">Du</span><input id="f-du" type="date" /></div>
+        <div><span class="petit">Au</span><input id="f-au" type="date" /></div>
+      </div>
+
+      <p class="petit" id="f-compteur" hidden></p>
+      <button class="lien" id="f-reset" type="button">Tout afficher</button>
+    </section>
 
     <div id="fil"></div>
   `;
@@ -256,7 +278,7 @@ export async function afficherJournal(zone, foyer, membres) {
       .eq("household_id", foyer.id)
       .order("entry_date", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(500);
 
     if (error) {
       console.error(error);
@@ -265,6 +287,8 @@ export async function afficherJournal(zone, foyer, membres) {
     }
 
     if (data.length === 0) {
+      entrees = [];
+      dessinerTags();
       fil.innerHTML = `
         <section class="carte vide apparition d3">
           <p>Votre carnet est encore vierge.</p>
@@ -286,7 +310,59 @@ export async function afficherJournal(zone, foyer, membres) {
       (photosParPage[l.entry_id] ||= []).push(l.storage_path);
     });
 
-    fil.innerHTML = data.map((e) => {
+    entrees = data;
+    lienPhoto = lien;
+    dessinerTags();
+    dessinerFil();
+  }
+
+  // ---------- Recherche / filtres (tout se passe dans le navigateur) ----------
+
+  // Pour chercher sans se soucier des majuscules ni des accents ("lea" trouve "Léa")
+  const normaliser = (s) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+  // Une page correspond-elle aux filtres choisis ? (les dates "AAAA-MM-JJ" se comparent comme du texte)
+  function correspond(e) {
+    if (filtre.tag && e.tag !== filtre.tag) return false;
+    if (filtre.du && e.entry_date < filtre.du) return false;
+    if (filtre.au && e.entry_date > filtre.au) return false;
+    if (filtre.texte) {
+      const botte = normaliser(`${e.body} ${e.tag || ""} ${noms[e.author_id] || ""}`);
+      if (!botte.includes(normaliser(filtre.texte))) return false;
+    }
+    return true;
+  }
+
+  const filtreActif = () => Boolean(filtre.texte || filtre.tag || filtre.du || filtre.au);
+
+  // Les pastilles d'etiquettes = celles qui existent vraiment dans le journal
+  function dessinerTags() {
+    const tags = [...new Set(entrees.map((e) => e.tag).filter(Boolean))].sort();
+    if (filtre.tag && !tags.includes(filtre.tag)) filtre.tag = ""; // l'etiquette n'existe plus
+    zone.querySelector("#f-tags").innerHTML = tags.length
+      ? tags.map((t) => `<button type="button" class="chip ${t === filtre.tag ? "actif" : ""}" data-filtre-tag="${echapper(t)}">${echapper(t)}</button>`).join("")
+      : `<span class="petit">Pas encore d'étiquette.</span>`;
+  }
+
+  // Affiche le fil en appliquant les filtres
+  function dessinerFil() {
+    const lien = lienPhoto;
+    const visibles = entrees.filter(correspond);
+
+    const compteur = zone.querySelector("#f-compteur");
+    compteur.hidden = !filtreActif();
+    compteur.textContent = `${visibles.length} page${visibles.length > 1 ? "s" : ""} sur ${entrees.length}`;
+
+    if (visibles.length === 0) {
+      fil.innerHTML = `
+        <section class="carte vide">
+          <p>Rien ne correspond à ta recherche.</p>
+          <p class="petit">Essaie un autre mot, ou touche « Tout afficher ».</p>
+        </section>`;
+      return;
+    }
+
+    fil.innerHTML = visibles.map((e) => {
       const mienne = e.author_id === moi;
       const nom = noms[e.author_id] || "Quelqu'un";
       // echapper() d'abord (securite), puis on remet les retours a la ligne
@@ -333,6 +409,36 @@ export async function afficherJournal(zone, foyer, membres) {
     if (error) { console.error(error); alert(messageErreur(error)); return; }
     if (chemins.length) await supabase.storage.from("photos").remove(chemins);
     chargerFil();
+  });
+
+  // ---------- Branchement de la recherche ----------
+  const cadreFiltres = zone.querySelector("#filtres");
+  zone.querySelector("#bascule-recherche").addEventListener("click", () => {
+    cadreFiltres.hidden = !cadreFiltres.hidden;
+    if (!cadreFiltres.hidden) zone.querySelector("#f-texte").focus();
+  });
+
+  // Chaque frappe / changement met le fil a jour tout de suite
+  zone.querySelector("#f-texte").addEventListener("input", (e) => { filtre.texte = e.target.value.trim(); dessinerFil(); });
+  zone.querySelector("#f-du").addEventListener("change", (e) => { filtre.du = e.target.value; dessinerFil(); });
+  zone.querySelector("#f-au").addEventListener("change", (e) => { filtre.au = e.target.value; dessinerFil(); });
+
+  // Clic sur une etiquette : on l'active, un 2e clic la desactive
+  zone.querySelector("#f-tags").addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-filtre-tag]");
+    if (!chip) return;
+    filtre.tag = filtre.tag === chip.dataset.filtreTag ? "" : chip.dataset.filtreTag;
+    dessinerTags();
+    dessinerFil();
+  });
+
+  zone.querySelector("#f-reset").addEventListener("click", () => {
+    Object.assign(filtre, { texte: "", tag: "", du: "", au: "" });
+    zone.querySelector("#f-texte").value = "";
+    zone.querySelector("#f-du").value = "";
+    zone.querySelector("#f-au").value = "";
+    dessinerTags();
+    dessinerFil();
   });
 
   await chargerFil();
