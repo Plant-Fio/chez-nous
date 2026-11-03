@@ -102,7 +102,7 @@ export async function afficherJournal(zone, foyer, membres) {
 
     <section class="carte" id="filtres" hidden>
       <label for="f-texte">Un mot ou un prénom</label>
-      <input id="f-texte" type="search" autocomplete="off" placeholder="plage, anniversaire, Léa…" />
+      <input id="f-texte" type="search" autocomplete="off" placeholder="plage, anniversaire, Fiona…" />
 
       <label>Une étiquette</label>
       <div class="chips" id="f-tags"></div>
@@ -318,7 +318,7 @@ export async function afficherJournal(zone, foyer, membres) {
 
   // ---------- Recherche / filtres (tout se passe dans le navigateur) ----------
 
-  // Pour chercher sans se soucier des majuscules ni des accents ("lea" trouve "Léa")
+  // Pour chercher sans se soucier des majuscules ni des accents ("ete" trouve "été")
   const normaliser = (s) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
   // Une page correspond-elle aux filtres choisis ? (les dates "AAAA-MM-JJ" se comparent comme du texte)

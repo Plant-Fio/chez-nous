@@ -429,3 +429,37 @@ input[type="search"]::placeholder { color: #B9A793; font-weight: 400; }
 
 .deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .deux-colonnes .petit { display: block; margin-bottom: 4px; }
+
+/* =========================================================
+   Export : case a cocher, resultat, separateur
+   ========================================================= */
+
+.case {
+  display: flex; align-items: center; gap: 12px;
+  margin: 16px 0 4px;
+  font-size: 1rem; color: var(--brun);
+}
+.case input {
+  width: 24px; height: 24px; margin: 0;
+  accent-color: var(--terracotta);
+}
+
+.resultat {
+  margin-top: 16px;
+  padding: 14px 16px 6px;
+  background: var(--sauge-clair);
+  border-radius: 18px;
+}
+.resultat p { margin: 0; }
+.resultat .bouton { margin-bottom: 10px; }
+
+hr.separe {
+  border: 0;
+  border-top: 2px dashed var(--beige);
+  margin: 26px 0 16px;
+}
+
+/* Les deux champs de date restent dans la carte (sinon le 2e depasse sur petit ecran) */
+.deux-colonnes > div { min-width: 0; }
+.deux-colonnes input[type="date"] { min-width: 0; max-width: 100%; }
+.deux-colonnes input[type="date"] { padding-left: 12px; padding-right: 8px; }

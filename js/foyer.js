@@ -6,6 +6,7 @@
 import { supabase } from "./supabase.js";
 import { echapper, afficherMessage, messageErreur } from "./outils.js";
 import { afficherJournal, arreterJournal } from "./journal.js";
+import { afficherExport } from "./export.js";
 
 // ---------- Choisir : creer ou rejoindre ----------
 export function ecranFoyerChoix(racine, apres) {
@@ -111,6 +112,8 @@ export async function ecranAccueilFoyer(racine, membre, apres) {
 
     <div id="journal"></div>
 
+    <div id="export"></div>
+
     <section class="carte apparition d3">
       <h2>Qui vit ici</h2>
       <ul class="membres">${liste}</ul>
@@ -139,4 +142,5 @@ export async function ecranAccueilFoyer(racine, membre, apres) {
 
   // On branche le journal dans sa boite
   afficherJournal(racine.querySelector("#journal"), foyer, membres || []);
+  afficherExport(racine.querySelector("#export"), foyer, membres || []);
 }
