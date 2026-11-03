@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover : l'appli occupe tout l'ecran de l'iPhone, encoche comprise -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Chez Nous</title>
+  <meta name="description" content="Notre journal a deux" />
+  <meta name="theme-color" content="#FAF3E7" />
+
+  <!-- Reglages iOS : permet l'installation "sur l'ecran d'accueil" en plein ecran -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Chez Nous" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+
+  <!-- Polices : Caveat (manuscrite, titres) + Nunito (arrondie, lisible) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <!-- Toute l'appli s'affiche dans cette boite. Le JS y place les ecrans. -->
+  <main id="app" aria-live="polite"></main>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
